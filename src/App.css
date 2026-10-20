@@ -86,3 +86,46 @@
   outline: 2px solid #be123c;
   outline-offset: 3px;
 }
+
+.serving-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e0d8;
+}
+
+.serving-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.serving-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.serving-controls input {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 0.6rem;
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.serving-controls button{
+  padding: 0.6rem 1rem;
+  background: #3d6b56;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.serving-controls button:hover {
+  background: #2f5443;
+}

@@ -95,6 +95,16 @@ function App() {
     );
   }
 
+  function handleAddServing(id: string, date: string) {
+    setDishes((currentDishes) =>
+      currentDishes.map((dish) =>
+        dish.id === id
+          ? {...dish, servedDates: [...dish.servedDates, date]} // Create a new array containing the previous dates plus the new date.
+          : dish
+      )
+    );
+  }
+
   return (
     <main className = "app">
       <h1>Dishback</h1>
@@ -151,6 +161,7 @@ function App() {
             key = {dish.id}
             dish = {dish}
             onToggleFavorite = {handleToggleFavorite}
+            onAddServing = {handleAddServing}
             />
         ))}
       </section>
