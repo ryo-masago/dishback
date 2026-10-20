@@ -67,3 +67,22 @@
 .dish-form button:hover {
   background: #1e90ff;
 }
+
+.favorite-button {
+  padding: 0.6rem 1rem;
+  background-color: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  font: inherit;
+  transition: background-color 0.2s;
+}
+
+.favorite-button:hover {
+  background-color: #ffe4e6;
+}
+
+.favorite-button:focus-visible {
+  outline: 2px solid #be123c;
+  outline-offset: 3px;
+}

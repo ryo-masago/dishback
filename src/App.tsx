@@ -85,6 +85,16 @@ function App() {
     setServedDate("");
   }
 
+  function handleToggleFavorite(id: string) {
+    setDishes((currentDishes) =>
+      currentDishes.map((dish) =>
+        dish.id === id // Find dish by its ID.
+          ? {...dish, favorite: !dish.favorite} // Spread operator copies the dish's existing properties. Overwrite favorite with its opposite value.
+          : dish // Keep the other dishes unchanged.
+      )
+    );
+  }
+
   return (
     <main className = "app">
       <h1>Dishback</h1>
@@ -137,7 +147,11 @@ function App() {
 
       <section className = "dish-grid">
         {dishes.map((dish) => (
-          <DishCard key = {dish.id} dish = {dish}/>
+          <DishCard
+            key = {dish.id}
+            dish = {dish}
+            onToggleFavorite = {handleToggleFavorite}
+            />
         ))}
       </section>
     </main>
