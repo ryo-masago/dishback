@@ -151,6 +151,16 @@ function App() {
     );
   }
 
+  function handleDeleteDish(id: string) {
+    const dishToDelete = dishes.find((dish) => dish.id === id);
+
+    if (!dishToDelete) return;
+    const confirmed = window.confirm(`Are you sure you want to delete "${dishToDelete.name}"?`); // window.confirm() displays a browser confirmation dialog.
+
+    if (!confirmed) return;
+    setDishes((currentDishes) => currentDishes.filter((dish) => dish.id !== id)); // Updates the dishes state with a new array excluding the dish to delete.
+  }
+
   function handleClearFilters() {
     setSearchQuery("");
     setSelectedCategory("All");
@@ -265,6 +275,7 @@ function App() {
             dish = {dish}
             onToggleFavorite = {handleToggleFavorite}
             onAddServing = {handleAddServing}
+            onDeleteDish = {handleDeleteDish}
             />
         ))}
       </section>

@@ -6,9 +6,10 @@ type DishCardProps = {
   dish: Dish;
   onToggleFavorite: (id: string) => void; // A function that accepts a string ID and doesn't return a meaningful value.
   onAddServing: (id: string, date: string) => void; // New function accepts two arguments.
+  onDeleteDish: (id: string) => void;
 };
 
-export function DishCard({dish, onToggleFavorite, onAddServing}: DishCardProps) {
+export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish}: DishCardProps) {
   const [servingDate, setServingDate] = useState("");
 
   function handleServingSubmit(
@@ -62,6 +63,13 @@ export function DishCard({dish, onToggleFavorite, onAddServing}: DishCardProps) 
         <button type = "submit">Add Date</button>
         </div>
       </form>
+      <button
+        type = "button"
+        className = "delete-button"
+        onClick = {() => onDeleteDish(dish.id)}
+      >
+        Delete Dish
+      </button>
     </article>
   );
 }

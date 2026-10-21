@@ -236,3 +236,27 @@
 .filter-footer .results-count {
   margin: 0;
 }
+
+.delete-button {
+  padding: 0.6rem 1rem;
+  background-color: transparent;
+  color: #b45353;
+  border: 1px solid #e8c5c5;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+}
+
+.delete-button:hover {
+  background-color: #fdf0f0;
+  border-color: #b45353;
+}
+
+.delete-button:focus-visible {
+  outline: 2px solid #b45353;
+  outline-offset: 3px;
+}
