@@ -1,5 +1,5 @@
 import {DishCard} from "./components/DishCard";
-import type {Dish} from "./types/Dish";
+import type {Dish, DishEdit} from "./types/Dish";
 import "./App.css";
 import {useEffect, useState} from "react";
 import type {FormEvent} from "react";
@@ -161,6 +161,16 @@ function App() {
     setDishes((currentDishes) => currentDishes.filter((dish) => dish.id !== id)); // Updates the dishes state with a new array excluding the dish to delete.
   }
 
+  function handleEditDish(id: string, updates: DishEdit) {
+    setDishes((currentDishes) =>
+      currentDishes.map((dish) =>
+        dish.id === id
+          ? {...dish, ...updates} // ...dish copies all the existing properties of the dish. // ...updates then replaces any matching properties with the new values.
+          : dish
+      )
+    );
+  }
+
   function handleClearFilters() {
     setSearchQuery("");
     setSelectedCategory("All");
@@ -276,6 +286,7 @@ function App() {
             onToggleFavorite = {handleToggleFavorite}
             onAddServing = {handleAddServing}
             onDeleteDish = {handleDeleteDish}
+            onEditDish = {handleEditDish}
             />
         ))}
       </section>
