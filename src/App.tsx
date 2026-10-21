@@ -1,7 +1,7 @@
 import {DishCard} from "./components/DishCard";
 import type {Dish} from "./types/Dish";
 import "./App.css";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import type {FormEvent} from "react";
 
 const initialDishes: Dish[] = [
@@ -56,7 +56,36 @@ function App() {
   const [notes, setNotes] = useState("");
   const [servedDate, setServedDate] = useState("");
 
-  const [dishes, setDishes] = useState<Dish[]>(initialDishes);
+  const [dishes, setDishes] = useState<Dish[]>(() => {
+    try {
+      const savedDishes = localStorage.getItem("dishback-dishes"); // Ask the browser whether it has any data stored under the key "dishback-dishes".
+
+      if (savedDishes === null) {
+        return initialDishes; // Use the sample dishes if nothing is saved.
+      }
+
+      const parsedDishes: unknown = JSON.parse(savedDishes); // Convert string back into JavaScript data.
+
+      if (!Array.isArray(parsedDishes)) {
+        return initialDishes;
+      }
+
+      return parsedDishes as Dish[];
+    } catch (error) { // Handle unexpected errors.
+      console.error("Failed to load saved dishes:", error);
+      return initialDishes;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem( // Convert the current dishes array into JSON and save it.
+        "dishback-dishes", JSON.stringify(dishes)
+      );
+    } catch (error) {
+      console.error("Failed to save dishes:", error);
+    }
+  }, [dishes]); // Rerun the effect when the dishes state changes.
 
   function handleAddDish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
