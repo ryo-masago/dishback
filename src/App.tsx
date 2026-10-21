@@ -87,6 +87,23 @@ function App() {
     }
   }, [dishes]); // Rerun the effect when the dishes state changes.
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+
+  const categories = [...new Set(dishes.map((dish) => dish.category))]; // new Set() removes duplicates.
+
+  const filteredDishes = dishes.filter((dish) => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = dish.name.toLowerCase().includes(query) || dish.notes.toLowerCase().includes(query);
+    const matchesCategory = selectedCategory === "All" || dish.category === selectedCategory;
+    const matchesFavorite = !favoritesOnly || dish.favorite;
+
+    return (
+      matchesSearch && matchesCategory && matchesFavorite
+    );
+  });
+
   function handleAddDish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -132,6 +149,12 @@ function App() {
           : dish
       )
     );
+  }
+
+  function handleClearFilters() {
+    setSearchQuery("");
+    setSelectedCategory("All");
+    setFavoritesOnly(false);
   }
 
   return (
@@ -184,8 +207,59 @@ function App() {
         <button type = "submit">Add Dish</button>
       </form>
 
+      <section className = "dish-filters">
+        <h2>Find a Dish</h2>
+        <div className = "filter-controls">
+          <div className = "filter-field">
+            <label htmlFor = "dish-search">Search Dishes</label>
+            <input
+              id = "dish-search"
+              type = "search"
+              placeholder = "Search by name or notes..."
+              value = {searchQuery}
+              onChange = {(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className = "filter-field">
+            <label htmlFor = "category-filter">Category</label>
+            <select
+            id = "category-filter"
+            value = {selectedCategory}
+            onChange = {(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value = "All">All Categories</option>
+
+              {categories.map((category) => (
+                <option key = {category} value = {category}>{category}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <label className = "favorites-filter">
+          <input
+            type = "checkbox"
+            checked = {favoritesOnly} // Checkboxes represent an on/off state.
+            onChange = {(e) => setFavoritesOnly(e.target.checked)} // Gives a boolean true or false instead of a string.
+          />
+          Show Favorites Only
+        </label>
+        <div className = "filter-footer">
+          <p className = "results-count">Showing {filteredDishes.length} of {dishes.length} dishes</p>
+          <button
+            type = "button"
+            className = "clear-button"
+            onClick = {handleClearFilters}
+            disabled = {
+              searchQuery === "" && selectedCategory === "All" && !favoritesOnly // Disable button when there are no active filters.
+            }
+          >
+            Clear Filters
+          </button>
+        </div>
+      </section>
+
       <section className = "dish-grid">
-        {dishes.map((dish) => (
+        {filteredDishes.map((dish) => (
           <DishCard
             key = {dish.id}
             dish = {dish}
@@ -194,6 +268,10 @@ function App() {
             />
         ))}
       </section>
+
+      {filteredDishes.length === 0 && (
+        <p className = "empty-message">No dishes found. Try changing your search or filters.</p>
+      )}
     </main>
   );
 }
