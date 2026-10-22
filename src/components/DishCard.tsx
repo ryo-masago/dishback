@@ -8,9 +8,10 @@ type DishCardProps = {
   onAddServing: (id: string, date: string) => void; // New function accepts two arguments.
   onDeleteDish: (id: string) => void;
   onEditDish: (id: string, updates: DishEdit) => void;
+  onDeleteServing: (dishId: string, servingIndex: number) => void;
 };
 
-export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, onEditDish}: DishCardProps) {
+export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, onEditDish, onDeleteServing}: DishCardProps) {
   const [servingDate, setServingDate] = useState("");
 
   const [isEditing, setIsEditing] = useState(false); // Controls whether the editing form is visible.
@@ -57,6 +58,22 @@ export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, on
 
     setIsEditing(false);
   }
+
+  function handleRemoveServing(
+    index: number,
+    date: string
+  ) {
+    const confirmed = window.confirm(`Remove the serving recorded on ${date}?`);
+
+    if (!confirmed) return;
+
+    onDeleteServing(dish.id, index);
+  }
+
+  const sortedServings = dish.servedDates.map((date, originalIndex) => ({
+    date,
+    originalIndex,
+  })).sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <article className = "dish-card">
@@ -135,14 +152,29 @@ export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, on
           </div>
         </form>
       )}
-      <p>Served {dish.servedDates.length} times</p>
-      <ul>
-        {[...dish.servedDates] // Spread operator (...) copies serving dates into a new array. React state should not be mutated directly.
-          .sort((a, b) => b.localeCompare(a)) // a.localeCompare(b) => oldest first // b.localeCompare(a) => newest first.
-          .map((date, index) => (
-          <li key = {`${date}-${index}`}>{date}</li>
-        ))}
-      </ul>
+      <p>
+        Served {dish.servedDates.length}{" "}
+        {dish.servedDates.length === 1 ? "time" : "times"}
+      </p>
+      {sortedServings.length === 0 ? (
+        <p>No serving dates recorded yet.</p>
+      ) : (
+        <ul className = "serving-history">
+          {sortedServings.map(({date, originalIndex}) => (
+            <li key = {originalIndex}>
+              <span>{date}</span>
+              <button
+                type = "button"
+                className = "remove-serving-button"
+                onClick = {() => handleRemoveServing(originalIndex, date)}
+                aria-label = {`Remove serving on ${date}`}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       <form
         className = "serving-form"
         onSubmit = {handleServingSubmit}

@@ -171,6 +171,16 @@ function App() {
     );
   }
 
+  function handleDeleteServing(dishId: string, servingIndex: number) {
+    setDishes((currentDishes) =>
+      currentDishes.map((dish) =>
+        dish.id === dishId // Find the correct dish.
+          ? {...dish, servedDates: dish.servedDates.filter((_, index) => index !== servingIndex),} // Remove one serving date.
+          : dish
+      )
+    );
+  }
+
   function handleClearFilters() {
     setSearchQuery("");
     setSelectedCategory("All");
@@ -287,6 +297,7 @@ function App() {
             onAddServing = {handleAddServing}
             onDeleteDish = {handleDeleteDish}
             onEditDish = {handleEditDish}
+            onDeleteServing = {handleDeleteServing}
             />
         ))}
       </section>
