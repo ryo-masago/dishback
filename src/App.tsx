@@ -3,6 +3,8 @@ import type {Dish, DishEdit} from "./types/Dish";
 import "./App.css";
 import {useEffect, useState, useRef} from "react";
 import type {ChangeEvent, FormEvent} from "react";
+import type {User} from "@supabase/supabase-js";
+import {supabase} from "./lib/supabase";
 
 const initialDishes: Dish[] = [
   {
@@ -237,10 +239,82 @@ function App() {
     }
   }
 
+  const [user, setUser] = useState<User | null>(null);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getUser().then(({data}) => {
+      if (active) setUser(data.user);
+    });
+
+    const {
+      data: {subscription},
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function handleSendLink(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    const {error} = await supabase.auth.signInWithOtp({
+      email: loginEmail.trim(),
+      options: {
+        emailRedirectTo: window.location.origin
+      },
+    });
+
+    setAuthMessage(
+      error ? error.message : "Check your email for a sign-in link."
+    );
+  }
+
   return (
     <main className = "app">
       <h1>Dishback</h1>
       <p>Mom's homemade food journal</p>
+
+      <section className = "auth-panel">
+        {user ? (
+          <>
+            <p>Signed in as {user.email}</p>
+            <button
+              type = "button"
+              onClick = {() => supabase.auth.signOut()}
+            >
+              Sign Out
+            </button>
+          </>
+        ) : (
+          <form onSubmit = {handleSendLink}>
+            <label htmlFor = "login-email">Email Address</label>
+            <input
+              id = "login-email"
+              type = "email"
+              value = {loginEmail}
+              onChange = {(e) => setLoginEmail(e.target.value)}
+              required
+            />
+            <button type = "submit">
+              Send Sign-In Link
+            </button>
+          </form>
+        )}
+
+        {authMessage && <p role = "status">{authMessage}</p>}
+      </section>
 
       <form className = "dish-form" onSubmit = {handleAddDish}>
         <h2>Add a new dish</h2>
