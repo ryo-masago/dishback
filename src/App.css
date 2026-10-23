@@ -377,3 +377,65 @@
   outline: 2px solid #b45353;
   outline-offset: 2px;
 }
+
+.photo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.photo-field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.photo-field input[type = "file"] {
+  padding: 0.75rem;
+  background: #faf8f5;
+  border: 1px dashed #aec5b6;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.photo-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.photo-preview img {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e5e0d8;
+}
+
+.photo-preview p {
+  margin: 0;
+  color: #78716c;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.photo-preview .remove-photo-button {
+  align-self: flex-start;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  color: #b45353;
+  border: 1px solid #e8c5c5;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.photo-preview .remove-photo-button:hover {
+  background: #fdf0f0;
+}
+
+.photo-preview .remove-photo-button:focus-visible {
+  outline: 2px solid #b45353;
+  outline-offset: 3px;
+}

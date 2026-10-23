@@ -1,8 +1,8 @@
 import {DishCard} from "./components/DishCard";
 import type {Dish, DishEdit} from "./types/Dish";
 import "./App.css";
-import {useEffect, useState} from "react";
-import type {FormEvent} from "react";
+import {useEffect, useState, useRef} from "react";
+import type {ChangeEvent, FormEvent} from "react";
 
 const initialDishes: Dish[] = [
   {
@@ -104,6 +104,18 @@ function App() {
     );
   });
 
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Stores the actual selected file object.
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null); // Stores the temporary URL used to display the image.
+  const photoInputRef = useRef<HTMLInputElement>(null); // Gives access to the file input so it can reset.
+
+  useEffect(() => {
+    if (!photoPreviewUrl) return;
+
+    return () => {
+      URL.revokeObjectURL(photoPreviewUrl);
+    };
+  }, [photoPreviewUrl]);
+
   function handleAddDish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -129,6 +141,7 @@ function App() {
     setCategory("Japanese");
     setNotes("");
     setServedDate("");
+    clearPhoto();
   }
 
   function handleToggleFavorite(id: string) {
@@ -187,6 +200,43 @@ function App() {
     setFavoritesOnly(false);
   }
 
+  function handlePhotoChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0]; // Collection of files the user selected. // [0] gets the first file.
+
+    if (!file) {
+      clearPhoto();
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) { // Check if the file reports and image MIME type.
+      alert("Please select an image file.");
+      clearPhoto();
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+
+    if (file.size > maxSize) { // Reject files larger than 10MB to keep preview manageable.
+      alert("Please select an image smaller than 10MB.");
+      clearPhoto();
+      return;
+    }
+
+    setSelectedPhoto(file);
+    setPhotoPreviewUrl(URL.createObjectURL(file)); // Create temporary URL and store it.
+  }
+
+  function clearPhoto() {
+    setSelectedPhoto(null);
+    setPhotoPreviewUrl(null);
+
+    if(photoInputRef.current) {
+      photoInputRef.current.value = "";
+    }
+  }
+
   return (
     <main className = "app">
       <h1>Dishback</h1>
@@ -233,6 +283,36 @@ function App() {
           value = {servedDate}
           onChange = {(e) => setServedDate(e.target.value)}
         />
+
+        <div className = "photo-field">
+          <label htmlFor = "dish-photo">
+            Dish Photo (Optional)
+          </label>
+
+          <input
+            ref = {photoInputRef}
+            id = "dish-photo"
+            type = "file"
+            accept = "image/*"
+            onChange = {handlePhotoChange}
+          />
+
+          {photoPreviewUrl && selectedPhoto && (
+            <div className = "photo-preview">
+              <img src = {photoPreviewUrl} alt = {`Preview of ${name || "selected dish"}`}/>
+              <p>{selectedPhoto.name}</p>
+              <p>Preview only - Photo is not saved yet.</p>
+
+              <button
+                type = "button"
+                className = "remove-photo-button"
+                onClick = {clearPhoto}
+              >
+                Remove Photo
+              </button>
+            </div>
+          )}
+        </div>
 
         <button type = "submit">Add Dish</button>
       </form>
