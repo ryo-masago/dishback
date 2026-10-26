@@ -1,6 +1,7 @@
 import type {Dish, DishEdit} from "../types/Dish"
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import type {FormEvent} from "react";
+import {supabase} from "../lib/supabase"
 
 type DishCardProps = {
   dish: Dish;
@@ -9,15 +10,42 @@ type DishCardProps = {
   onDeleteDish: (id: string) => void;
   onEditDish: (id: string, updates: DishEdit) => void;
   onDeleteServing: (dishId: string, servingIndex: number) => void;
+  userId: string | null;
 };
 
-export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, onEditDish, onDeleteServing}: DishCardProps) {
+export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, onEditDish, onDeleteServing, userId}: DishCardProps) {
   const [servingDate, setServingDate] = useState("");
 
   const [isEditing, setIsEditing] = useState(false); // Controls whether the editing form is visible.
   const [editedName, setEditedName] = useState(dish.name);
   const [editedCategory, setEditedCategory] = useState(dish.category);
   const [editedNotes, setEditedNotes] = useState(dish.notes);
+
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setSignedImageUrl(null);
+
+    const path = dish.imagePath;
+
+    if (!path || !userId) return;
+
+    async function loadImage() {
+      const {data, error} = await supabase.storage.from("dish-photos").createSignedUrl(path!, 3600); // URL is valid for 3,600 seconds.
+
+      if (!cancelled && !error) {
+        setSignedImageUrl(data.signedUrl);
+      }
+    }
+
+    void loadImage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dish.imagePath, userId]);
 
   function handleServingSubmit(
     event: FormEvent<HTMLFormElement>
@@ -77,6 +105,13 @@ export function DishCard({dish, onToggleFavorite, onAddServing, onDeleteDish, on
 
   return (
     <article className = "dish-card">
+      {userId && signedImageUrl && (
+        <img
+          className = "dish-image"
+          src = {signedImageUrl}
+          alt = {`Photo of ${dish.name}`}
+        />
+      )}
       <h2>{dish.name}</h2>
       <p>Category: {dish.category}</p>
       <p>{dish.notes}</p>

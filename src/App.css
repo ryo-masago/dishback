@@ -439,3 +439,21 @@
   outline: 2px solid #b45353;
   outline-offset: 3px;
 }
+
+.upload-error {
+  color: #b45353;
+  font-size: 0.875rem;
+}
+
+.dish-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dish-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}

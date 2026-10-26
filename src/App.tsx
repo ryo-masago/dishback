@@ -110,6 +110,9 @@ function App() {
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null); // Stores the temporary URL used to display the image.
   const photoInputRef = useRef<HTMLInputElement>(null); // Gives access to the file input so it can reset.
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+
   useEffect(() => {
     if (!photoPreviewUrl) return;
 
@@ -118,10 +121,49 @@ function App() {
     };
   }, [photoPreviewUrl]);
 
-  function handleAddDish(event: FormEvent<HTMLFormElement>) {
+  async function handleAddDish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!name.trim()) return;
+    if (!name.trim() || isUploading) return;
+
+    setPhotoError("");
+    setIsUploading(true);
+
+    try {
+      let imagePath: string | undefined;
+
+      if (selectedPhoto) {
+        if (!user) {
+          setPhotoError("Please sign in to upload a photo.");
+          return;
+        }
+
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ];
+
+        if (!allowedTypes.includes(selectedPhoto.type)) {
+          setPhotoError("Please use a JPEG, PNG, or WebP image.");
+          return;
+        }
+
+        if (selectedPhoto.size > 10 * 1024 * 1024) {
+          setPhotoError("Photo must be 10MB or smaller.");
+          return;
+        }
+
+        const extension = selectedPhoto.type === "image/png" ? "png" : selectedPhoto.type === "image/webp" ? "webp" : "jpg";
+
+        const filePath = `${user.id}/${crypto.randomUUID()}.${extension}`; // Generates a unique image path inside the signed-in user's folder.
+
+        const {data, error} = await supabase.storage.from("dish-photos").upload(filePath, selectedPhoto, {contentType: selectedPhoto.type, upsert: false});
+
+        if (error) throw error;
+
+        imagePath = data.path;
+      }
 
     const newDish: Dish = {
       id: crypto.randomUUID(), // Generates a unique ID for each dish.
@@ -129,7 +171,8 @@ function App() {
       category,
       notes: notes.trim(),
       servedDates: servedDate ? [servedDate] : [], // If the user selected a date, create an array containing that date. Otherwise, create an empty array.
-      favorite: false
+      favorite: false,
+      imagePath,
     };
 
     // Create a new array containing the new dish followed by all existing dishes.
@@ -144,7 +187,10 @@ function App() {
     setNotes("");
     setServedDate("");
     clearPhoto();
-  }
+  } catch (error) {
+    setPhotoError(error instanceof Error ? error.message : "Failed to upload photo.");
+  } finally {setIsUploading(false);}
+}
 
   function handleToggleFavorite(id: string) {
     setDishes((currentDishes) =>
@@ -388,7 +434,13 @@ function App() {
           )}
         </div>
 
-        <button type = "submit">Add Dish</button>
+        <button type = "submit" disabled = {isUploading}>
+          {isUploading ? "Uploading..." : "Add Dish"}
+        </button>
+
+        {photoError && (
+          <p role = "alert" className = "upload-error">{photoError}</p>
+        )}
       </form>
 
       <section className = "dish-filters">
@@ -452,7 +504,8 @@ function App() {
             onDeleteDish = {handleDeleteDish}
             onEditDish = {handleEditDish}
             onDeleteServing = {handleDeleteServing}
-            />
+            userId = {user?.id ?? null}
+          />
         ))}
       </section>
 

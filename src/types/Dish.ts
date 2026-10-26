@@ -5,7 +5,7 @@ export type Dish = {
   notes: string;
   servedDates: string[];
   favorite: boolean;
-  imageUrl: string;
+  imagePath?: string;
 }
 
 export type DishEdit = Pick<Dish, "name" | "category" | "notes">; // Create new type using selected properties from an existing type.
