@@ -327,10 +327,75 @@ function App() {
     );
   }
 
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [migrationMessage, setMigrationMessage] = useState("");
+
+  async function handleImportDishes() {
+    if (isMigrating) return;
+
+    setIsMigrating(true);
+    setMigrationMessage("");
+
+    try {
+      const {data: {user: currentUser}, error: authError} = await supabase.auth.getUser();
+
+      if (authError) throw authError;
+
+      if (!currentUser) {
+        throw new Error("Please sign in first.");
+      }
+
+      if (dishes.length === 0) {
+        throw new Error("No local dishes to import.");
+      }
+
+      // Convert dishes into database rows.
+      const rows = dishes.map((dish) => ({
+        user_id: currentUser.id,
+        id: dish.id,
+        name: dish.name,
+        category: dish.category,
+        notes: dish.notes,
+        served_dates: dish.servedDates,
+        favorite: dish.favorite,
+        image_path: dish.imagePath ?? null
+      }));
+
+      const {error: importError} = await supabase.from("dishes").upsert(rows, {onConflict: "user_id,id", ignoreDuplicates: true}); // Copy the records with .upsert(). // Supports inserting records and handling conflicts when records already exist.
+
+      if (importError) throw importError;
+
+      const {count, error: countError} = await supabase.from("dishes").select("*", {count: "exact", head: true}).eq("user_id", currentUser.id); // Ask Supabase to count the dishes belonging to the user.
+
+      if (countError) throw countError;
+
+      setMigrationMessage(`Copy complete! Supabase contains ${count ?? 0} dishes ` + `for your account. Your local data is unchanged.`)
+    } catch (error) {
+      setMigrationMessage(error instanceof Error ? error.message : "Failed to import dishes.");
+    } finally {
+      setIsMigrating(false);
+    }
+  }
+
   return (
     <main className = "app">
       <h1>Dishback</h1>
       <p>Mom's homemade food journal</p>
+
+      <section className = "migration-panel">
+        <h2>Cloud Migration</h2>
+        <p>Copy your existing dishes to your Supabase account. Your browser data will be preserved.</p>
+        <button
+          type = "button"
+          onClick = {handleImportDishes}
+          disabled = {isMigrating || !user || dishes.length === 0}
+        >
+          {isMigrating ? "Importing..." : "Import Dishes"}
+        </button>
+        {migrationMessage && (
+          <p role = "status">{migrationMessage}</p>
+        )}
+      </section>
 
       <section className = "auth-panel">
         {user ? (

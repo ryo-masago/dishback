@@ -457,3 +457,30 @@
   border-radius: 10px;
   margin-bottom: 1rem;
 }
+
+.migration-panel {
+  background: #f0f5f1;
+  border: 1px solid #aec5b6;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.migration-panel h2 {
+  margin-top: 0;
+}
+
+.migration-panel button {
+  background: #3d6b56;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.migration-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
